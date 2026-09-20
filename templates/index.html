@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Маршрут</title>
+</head>
+<body>
+<h1>Расчёт маршрута</h1>
+<form id="f">
+<input name="address_1" placeholder="Откуда" required><br>
+<input name="address_2" placeholder="Куда" required><br>
+<button>Рассчитать</button>
+</form>
+<pre id="r"></pre>
+<script>
+document.getElementById('f').onsubmit = async (e) => {
+    e.preventDefault();
+    const res = await fetch('/calculate', {method: 'POST', body: new FormData(e.target)});
+    const d = await res.json();
+    document.getElementById('r').textContent = d.error
+        ? d.error
+        : `Время: ${d.time_minutes} мин\nРасстояние: ${d.distance_km} км\nТопливо: ${d.fuel_liters}`;
+};
+</script>
+</body>
+</html>
