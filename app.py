@@ -9,6 +9,7 @@ from scipy.interpolate import CubicSpline
 load_dotenv()
 app = Flask(__name__)
 client = OSRM(base_url="https://router.project-osrm.org")
+FUEL_CONSUMPTION=8
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -16,7 +17,7 @@ def get_coordinates(address):
     url = 'https://geocode-maps.yandex.ru/1.x/'
     api_key = os.getenv('yandex_key')
     if not api_key:
-        raise ValueError(f"Ключ не найден!")
+        raise ValueError("Ключ не найден!")
     params = {'apikey': api_key, 'geocode': address, 'format': 'json'}
     response = requests.get(url, params=params)
     response.raise_for_status()
@@ -47,6 +48,7 @@ def calculate():
     d = route.distance / 1000
     lon_min, lon_max = 38.875000, 39.095000
     lat_min, lat_max = 44.975000, 45.145000
+    liters_one_way = d / 100 * FUEL_CONSUMPTION
     in_zone = any(lon_min <= p[0] <= lon_max and lat_min <= p[1] <= lat_max for p in route.geometry)
     current_hour = datetime.now().hour + datetime.now().minute / 60
     week_day = datetime.now().weekday()
@@ -98,6 +100,6 @@ def calculate():
                 a = 0
         return jsonify({'distance_km': round (d, 1), 'time_minutes': round (t * f(a), 1)})   
     else: 
-        return jsonify({'time_minutes': round(t,  1), 'distance_km': round(d, 1), 'fuel_liters': round(d , 2)})
+        return jsonify({'time_minutes': round(t,  1), 'distance_km': round(d, 1), 'fuel_liters': round(liters_one_way, 2) })
 if __name__ == '__main__':
     app.run(debug=True) 
