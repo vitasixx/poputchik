@@ -98,7 +98,7 @@ def calculate():
                 a = -0.016667 * (current_hour * 60 - 360) + 17.0
             else:
                 a = 0
-        return jsonify({'distance_km': round (d, 1), 'time_minutes': round (t * f(a), 1)})   
+        return jsonify({'distance_km': round (d, 1), 'time_minutes': round (t * f(a), 1), 'fuel_liters': round(liters_one_way, 2)})   
     else: 
         return jsonify({'time_minutes': round(t,  1), 'distance_km': round(d, 1), 'fuel_liters': round(liters_one_way, 2) })
 if __name__ == '__main__':
