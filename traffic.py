@@ -1,15 +1,28 @@
 import numpy as np 
 from datetime import datetime
 from scipy.interpolate import CubicSpline
+from geo import haversine
 def get_traffic_factor(points):
     lon_min, lon_max = 38.875000, 39.095000
-    lat_min, lat_max = 44.975000, 45.145000
-    in_zone = any(lon_min <= p[0] <= lon_max and lat_min <= p[1] <= lat_max for p in points)
+    lat_min, lat_max = 44.975000, 45.145000 
+    alls = 0
+    in_town_sum = 0
+    for i in range(1, len(points)):
+        po1 = points[i-1] 
+        po2 = points[i]
+        summa = haversine(po1[0], po1[1], po2[0], po2[1]) 
+        if lon_min <= po1[0] <= lon_max and lat_min <= po1[1] <= lat_max:
+            in_town_sum += summa
+        alls += summa
+    if alls == 0:
+        c = 0
+    else:
+        c = in_town_sum/alls
     current_hour = datetime.now().hour + datetime.now().minute / 60
     week_day = datetime.now().weekday()
-    if in_zone:
-        y = np.array([1, 0.5, 1.1, 1.3, 1.5, 1.8, 2.2, 2.6, 3.6])
-        x = np.array(list(range(len(y))))
+    if c>0:
+        y = np.array([1, 1.05, 1.1, 1.3, 1.5, 1.8, 2.2, 2.6, 3.6])
+        x = np.array(list(range(len(y))))                                             
         f = CubicSpline(x,y)
         if week_day < 5:
             if 6.25 <= current_hour < 8.75:
@@ -53,5 +66,5 @@ def get_traffic_factor(points):
                 a = -0.016667 * (current_hour * 60 - 360) + 17.0
             else:
                 a = 0
-        return f(a)
+        return (1 - c) + c * f(a)
     return 1
